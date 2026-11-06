@@ -14,6 +14,7 @@ export interface Chapter {
   description: string;
   order: number;
   lessons: Lesson[];
+  isActive: boolean;
 }
 
 export interface Lesson {
