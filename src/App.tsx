@@ -20,6 +20,7 @@ const courses = [
       "یادگیری معادلات، نامعادلات، توابع و مفاهیم پیشرفته جبر با مثال‌های کاربردی و تمرین‌های متنوع",
     image:
       "https://image.qwenlm.ai/generated-images/e3a5eb95-89d2-46f5-ac48-a4d129483343/_result.png",
+    instructor: "دکتر علی رضایی",
     rating: 4.5,
     students: 1240,
     isActive: true,
@@ -31,6 +32,7 @@ const courses = [
       "مفاهیم حد، مشتق، انتگرال و کاربردهای آن‌ها در حل مسائل واقعی و مهندسی",
     image:
       "https://image.qwenlm.ai/generated-images/1ed05e55-c1c9-401b-bbb8-1c5650ee7e9b/_result.png",
+    instructor: "دکتر مریم احمدی",
     rating: 4.8,
     students: 980,
     isActive: true,
@@ -42,9 +44,10 @@ const courses = [
       "بررسی اشکال هندسی، تبدیلات، مختصات و اثبات قضایا با رویکرد تحلیلی",
     image:
       "https://image.qwenlm.ai/generated-images/4ccb9820-900d-4846-9075-374358a01da0/_result.png",
+    instructor: "مهندس سعید کریمی",
     rating: 4.2,
     students: 756,
-    isActive: false,
+    isActive: true,
   },
   {
     id: 4,
@@ -53,6 +56,7 @@ const courses = [
       "آموزش مفاهیم پایه و پیشرفته آمار، توزیع‌های احتمالی و تحلیل داده‌ها",
     image:
       "https://image.qwenlm.ai/generated-images/122aaf0c-5066-4559-a723-057a09d7bc0f/_result.png",
+    instructor: "دکتر زهرا موسوی",
     rating: 4.6,
     students: 1105,
     isActive: true,
@@ -1764,9 +1768,8 @@ function AdminCoursesPage({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    instructor: "",
     image: "",
-    rating: 0,
-    students: 0,
     isActive: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -1776,9 +1779,8 @@ function AdminCoursesPage({
     setFormData({
       title: "",
       description: "",
+      instructor: "",
       image: "",
-      rating: 0,
-      students: 0,
       isActive: true,
     });
     setErrors({});
@@ -1790,9 +1792,8 @@ function AdminCoursesPage({
     setFormData({
       title: course.title,
       description: course.description,
+      instructor: course.instructor,
       image: course.image,
-      rating: course.rating,
-      students: course.students,
       isActive: course.isActive ?? true,
     });
     setErrors({});
@@ -1805,19 +1806,43 @@ function AdminCoursesPage({
     if (!formData.title.trim()) newErrors.title = "عنوان دوره الزامی است";
     if (!formData.description.trim())
       newErrors.description = "توضیحات الزامی است";
+    if (!formData.instructor.trim())
+      newErrors.instructor = "نام مدرس الزامی است";
     if (!formData.image.trim()) newErrors.image = "لینک تصویر الزامی است";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     if (editingCourse) {
+      // در ویرایش: rating و students حفظ می‌شوند
       setCourseList((prev) =>
         prev.map((c) =>
-          c.id === editingCourse.id ? { ...c, ...formData } : c,
+          c.id === editingCourse.id
+            ? {
+                ...c,
+                title: formData.title,
+                description: formData.description,
+                instructor: formData.instructor,
+                image: formData.image,
+                isActive: formData.isActive,
+              }
+            : c,
         ),
       );
     } else {
       const newId = Math.max(0, ...courseList.map((c) => c.id)) + 1;
-      setCourseList((prev) => [...prev, { id: newId, ...formData }]);
+      setCourseList((prev) => [
+        ...prev,
+        {
+          id: newId,
+          title: formData.title,
+          description: formData.description,
+          instructor: formData.instructor,
+          image: formData.image,
+          isActive: formData.isActive,
+          rating: 0, // مقدار اولیه محاسباتی
+          students: 0, // مقدار اولیه محاسباتی
+        },
+      ]);
     }
     setIsModalOpen(false);
   };
@@ -1917,6 +1942,22 @@ function AdminCoursesPage({
                     >
                       {course.isActive ? "فعال" : "غیرفعال"}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 text-sm text-blue-400">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    <span>{course.instructor}</span>
                   </div>
                   <p className="text-sm text-gray-400 mt-1 line-clamp-2">
                     {course.description}
@@ -2092,7 +2133,7 @@ function AdminCoursesPage({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   عنوان دوره
@@ -2191,6 +2232,142 @@ function AdminCoursesPage({
                   />
                 </div>
               </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isActive: e.target.checked })
+                  }
+                  className="w-5 h-5 rounded accent-blue-500"
+                />
+                <span className="text-sm text-gray-300">دوره فعال باشد</span>
+              </label>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all"
+                >
+                  {editingCourse ? "ذخیره تغییرات" : "افزودن دوره"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-3 text-sm text-gray-300 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors"
+                >
+                  انصراف
+                </button>
+              </div>
+            </form> */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  عنوان دوره
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  className={`w-full bg-gray-800/50 border ${
+                    errors.title ? "border-red-500" : "border-gray-700"
+                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500`}
+                />
+                {errors.title && (
+                  <p className="text-red-400 text-xs mt-1">{errors.title}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  نام مدرس
+                </label>
+                <input
+                  type="text"
+                  value={formData.instructor}
+                  onChange={(e) =>
+                    setFormData({ ...formData, instructor: e.target.value })
+                  }
+                  placeholder="مثال: دکتر علی رضایی"
+                  className={`w-full bg-gray-800/50 border ${
+                    errors.instructor ? "border-red-500" : "border-gray-700"
+                  } rounded-xl py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500`}
+                />
+                {errors.instructor && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.instructor}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  توضیحات
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className={`w-full bg-gray-800/50 border ${
+                    errors.description ? "border-red-500" : "border-gray-700"
+                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500 resize-none`}
+                />
+                {errors.description && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.description}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  لینک تصویر
+                </label>
+                <input
+                  type="url"
+                  dir="ltr"
+                  value={formData.image}
+                  onChange={(e) =>
+                    setFormData({ ...formData, image: e.target.value })
+                  }
+                  className={`w-full bg-gray-800/50 border ${
+                    errors.image ? "border-red-500" : "border-gray-700"
+                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500`}
+                />
+                {errors.image && (
+                  <p className="text-red-400 text-xs mt-1">{errors.image}</p>
+                )}
+              </div>
+
+              {/* نمایش فقط‌خواندنی مقادیر محاسباتی در حالت ویرایش */}
+              {editingCourse && (
+                <div className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-4 space-y-2">
+                  <p className="text-xs text-gray-500 mb-2">
+                    اطلاعات زیر به‌صورت خودکار توسط سیستم محاسبه می‌شوند و قابل
+                    ویرایش نیستند:
+                  </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">امتیاز دوره</span>
+                    <span className="flex items-center gap-1 text-yellow-400 font-medium">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                      {editingCourse.rating}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">تعداد شرکت‌کننده</span>
+                    <span className="text-blue-400 font-medium">
+                      {editingCourse.students.toLocaleString("fa-IR")} نفر
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
