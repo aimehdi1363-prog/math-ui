@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { AdminTab, Chapter, Course, Lesson } from "./types";
-
+import {
+  initialCourses,
+  initialChapters,
+  initialLessons,
+  initialLessonsWithVideo,
+  allChapters,
+  allLessons,
+} from "./data";
 // Types
 type Page =
   | "home"
@@ -10,120 +17,8 @@ type Page =
   | "admin-courses"
   | "admin-users"
   | "admin-reports"
-  | "admin-course-content";
-
-// Course data
-const initialCourses: Course[] = [
-  {
-    id: "c1",
-    title: "جبر پیشرفته",
-    category: "جبر",
-    description:
-      "یادگیری معادلات، نامعادلات، توابع و مفاهیم پیشرفته جبر با مثال‌های کاربردی و تمرین‌های متنوع",
-    instructor: "دکتر علی رضایی",
-    chapters: [],
-    image:
-      "https://image.qwenlm.ai/generated-images/e3a5eb95-89d2-46f5-ac48-a4d129483343/_result.png",
-    rating: 4.5,
-    students: 1240,
-    isActive: true,
-  },
-  {
-    id: "c2",
-    title: "حسابان (کالکولوس)",
-    category: "حسابان",
-    description:
-      "مفاهیم حد، مشتق، انتگرال و کاربردهای آن‌ها در حل مسائل واقعی و مهندسی",
-    instructor: "دکتر مریم احمدی",
-    chapters: [],
-    image:
-      "https://image.qwenlm.ai/generated-images/1ed05e55-c1c9-401b-bbb8-1c5650ee7e9b/_result.png",
-    rating: 4.8,
-    students: 980,
-    isActive: true,
-  },
-  {
-    id: "c3",
-    title: "هندسه تحلیلی",
-    category: "هندسه",
-    description:
-      "بررسی اشکال هندسی، تبدیلات، مختصات و اثبات قضایا با رویکرد تحلیلی",
-    instructor: "مهندس سعید کریمی",
-    chapters: [],
-    image:
-      "https://image.qwenlm.ai/generated-images/4ccb9820-900d-4846-9075-374358a01da0/_result.png",
-    rating: 4.2,
-    students: 756,
-    isActive: true,
-  },
-  {
-    id: "c4",
-    title: "آمار و احتمال",
-    category: "آمار",
-    description:
-      "آموزش مفاهیم پایه و پیشرفته آمار، توزیع‌های احتمالی و تحلیل داده‌ها",
-    instructor: "دکتر زهرا موسوی",
-    chapters: [],
-    image:
-      "https://image.qwenlm.ai/generated-images/122aaf0c-5066-4559-a723-057a09d7bc0f/_result.png",
-    rating: 4.6,
-    students: 1105,
-    isActive: true,
-  },
-];
-
-const initialChapters: Chapter[] = [
-  {
-    id: "ch1",
-    courseId: "c1",
-    title: "مقدمه‌ای بر جبر",
-    description: "آشنایی با مفاهیم پایه و نمادها",
-    order: 1,
-    isActive: true,
-    lessons: [],
-  },
-  {
-    id: "ch2",
-    courseId: "c1",
-    title: "معادلات درجه اول",
-    description: "حل معادلات خطی و کاربردها",
-    order: 2,
-    isActive: true,
-    lessons: [],
-  },
-  {
-    id: "ch3",
-    courseId: "c1",
-    title: "معادلات درجه دوم",
-    description: "روش‌های حل و تحلیل ریشه‌ها",
-    order: 3,
-    isActive: false,
-    lessons: [],
-  },
-];
-
-const initialLessons: Lesson[] = [
-  {
-    id: "l1",
-    chapterId: "ch1",
-    title: "معرفی نمادها",
-    description: "آشنایی با نمادهای ریاضی",
-    order: 1,
-    videoType: "aparat",
-    videoId: "abc123",
-    exercises: [],
-  },
-  {
-    id: "l2",
-    chapterId: "ch1",
-    title: "اعداد و مجموعه‌ها",
-    description: "مجموعه اعداد طبیعی، صحیح، حقیقی",
-    order: 2,
-    videoType: "",
-    videoId: "",
-    exercises: [],
-  },
-];
+  | "admin-course-content"
+  | "course-player";
 
 // ==================== AUTH PAGES ====================
 
@@ -1705,55 +1600,70 @@ function Banner({
 }
 
 // Course Card
-function CourseCard({ course }: { course: Course }) {
+function CourseCard({
+  course,
+  onOpen,
+}: {
+  course: Course;
+  onOpen?: (courseId: string) => void;
+}) {
   return (
-    <div className="group bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={course.image}
-          alt={course.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
-      </div>
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
-          {course.title}
-        </h3>
-        <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
-          {course.description}
-        </p>
-        <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
-          <div className="flex items-center gap-2">
-            <StarRating rating={course.rating} />
-            <span className="text-sm text-gray-400">{course.rating}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-gray-400">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span className="text-sm">
-              {course.students.toLocaleString("fa-IR")} شرکت‌کننده
-            </span>
+    <button
+      onClick={() => onOpen?.(course.id)}
+      className="group text-right w-full bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+    >
+      <div className="group bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={course.image}
+            alt={course.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
+        </div>
+        <div className="p-5">
+          <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+            {course.title}
+          </h3>
+          <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
+            {course.description}
+          </p>
+          <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <StarRating rating={course.rating} />
+              <span className="text-sm text-gray-400">{course.rating}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span className="text-sm">
+                {course.students.toLocaleString("fa-IR")} شرکت‌کننده
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
 // Courses Section
-function CoursesSection() {
+function CoursesSection({
+  onOpenCourse,
+}: {
+  onOpenCourse: (courseId: string) => void;
+}) {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
@@ -1766,7 +1676,7 @@ function CoursesSection() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {initialCourses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+          <CourseCard key={course.id} course={course} onOpen={onOpenCourse} />
         ))}
       </div>
     </section>
@@ -1810,6 +1720,516 @@ function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+// ==================== VIDEO PLAYER ====================
+
+function VideoPlayer({
+  lesson,
+  courseTitle,
+  chapterTitle,
+}: {
+  lesson: Lesson | null;
+  courseTitle: string;
+  chapterTitle?: string;
+}) {
+  const getEmbedUrl = () => {
+    if (!lesson?.videoType || !lesson?.videoId) return null;
+    if (lesson.videoType === "youtube") {
+      return `https://www.youtube.com/embed/${lesson.videoId}?rel=0`;
+    }
+    if (lesson.videoType === "aparat") {
+      return `https://www.aparat.com/video/video/embed/videohash/${lesson.videoId}/vt/frame`;
+    }
+    return null;
+  };
+
+  const embedUrl = getEmbedUrl();
+
+  if (!lesson) {
+    return (
+      <div className="bg-gray-900/70 border border-gray-800 rounded-2xl overflow-hidden">
+        <div className="aspect-video flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950">
+          <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mb-4">
+            <svg
+              className="w-10 h-10 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">
+            جلسه‌ای انتخاب نشده
+          </h3>
+          <p className="text-sm text-gray-400 text-center px-4">
+            از لیست سمت راست یک جلسه انتخاب کنید تا ویدیو پخش شود
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Video */}
+      <div className="bg-gray-900/70 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+        {embedUrl ? (
+          <div className="aspect-video bg-black">
+            <iframe
+              key={lesson.id}
+              src={embedUrl}
+              title={lesson.title}
+              className="w-full h-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className="aspect-video flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950">
+            <svg
+              className="w-12 h-12 text-gray-600 mb-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-sm text-gray-500">
+              ویدیویی برای این جلسه ثبت نشده است
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Lesson Info */}
+      <div className="bg-gray-900/70 border border-gray-800 rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h2 className="text-xl font-bold text-white">{lesson.title}</h2>
+          {lesson.videoType && (
+            <span
+              className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-md flex items-center gap-1 ${
+                lesson.videoType === "youtube"
+                  ? "text-red-400 bg-red-500/10 border border-red-500/30"
+                  : "text-purple-400 bg-purple-500/10 border border-purple-500/30"
+              }`}
+            >
+              {lesson.videoType === "youtube" ? (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                  YouTube
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" opacity="0.3" />
+                    <path d="M10 8l6 4-6 4V8z" />
+                  </svg>
+                  آپارات
+                </>
+              )}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-400 leading-relaxed">
+          {lesson.description}
+        </p>
+
+        {/* Meta */}
+        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            {courseTitle}
+          </span>
+          {chapterTitle && (
+            <span className="flex items-center gap-1.5">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h7"
+                />
+              </svg>
+              {chapterTitle}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            {lesson.exercises.length.toLocaleString("fa-IR")} تمرین
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== COURSE SIDEBAR (PLAYLIST) ====================
+
+function CoursePlaylist({
+  chapters,
+  lessons,
+  selectedLessonId,
+  onSelectLesson,
+  courseTitle,
+}: {
+  chapters: Chapter[];
+  lessons: Lesson[];
+  selectedLessonId: string | null;
+  onSelectLesson: (lessonId: string, chapterId: string) => void;
+  courseTitle: string;
+}) {
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
+    () => new Set(chapters.filter((c) => c.isActive).map((c) => c.id)),
+  );
+
+  const toggleChapter = (chapterId: string) => {
+    setExpandedChapters((prev) => {
+      const next = new Set(prev);
+      if (next.has(chapterId)) next.delete(chapterId);
+      else next.add(chapterId);
+      return next;
+    });
+  };
+
+  const sortedChapters = [...chapters].sort((a, b) => a.order - b.order);
+  const totalLessons = chapters.reduce(
+    (acc, ch) => acc + lessons.filter((l) => l.chapterId === ch.id).length,
+    0,
+  );
+
+  return (
+    <div className="bg-gray-900/70 border border-gray-800 rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-800 bg-gradient-to-r from-blue-500/10 to-purple-600/10">
+        <h2 className="text-base font-bold text-white mb-1">{courseTitle}</h2>
+        <p className="text-xs text-gray-400">
+          {sortedChapters.length.toLocaleString("fa-IR")} سرفصل —{" "}
+          {totalLessons.toLocaleString("fa-IR")} جلسه
+        </p>
+      </div>
+
+      {/* Chapters List */}
+      <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+        {sortedChapters.length === 0 && (
+          <div className="p-8 text-center text-gray-500 text-sm">
+            محتوایی برای این دوره ثبت نشده است
+          </div>
+        )}
+
+        {sortedChapters.map((chapter) => {
+          const chapterLessons = lessons
+            .filter((l) => l.chapterId === chapter.id)
+            .sort((a, b) => a.order - b.order);
+          const isExpanded = expandedChapters.has(chapter.id);
+          const hasActiveLesson = chapterLessons.some(
+            (l) => l.id === selectedLessonId,
+          );
+
+          return (
+            <div key={chapter.id} className="border-b border-gray-800/50">
+              {/* Chapter Header */}
+              <button
+                onClick={() => toggleChapter(chapter.id)}
+                disabled={!chapter.isActive}
+                className={`w-full px-4 py-3 flex items-center justify-between gap-2 text-right transition-colors ${
+                  chapter.isActive
+                    ? "hover:bg-gray-800/50"
+                    : "opacity-50 cursor-not-allowed"
+                } ${hasActiveLesson ? "bg-blue-500/5" : ""}`}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+                      hasActiveLesson
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-800 text-gray-400"
+                    }`}
+                  >
+                    {chapter.order}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3
+                      className={`text-sm font-bold truncate ${
+                        chapter.isActive ? "text-white" : "text-gray-500"
+                      }`}
+                    >
+                      {chapter.title}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      {chapterLessons.length.toLocaleString("fa-IR")} جلسه
+                      {!chapter.isActive && " — غیرفعال"}
+                    </p>
+                  </div>
+                </div>
+                <svg
+                  className={`shrink-0 w-4 h-4 text-gray-500 transition-transform ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {/* Lessons */}
+              {isExpanded && chapter.isActive && (
+                <div className="bg-gray-950/30">
+                  {chapterLessons.length === 0 && (
+                    <p className="px-4 py-3 text-xs text-gray-500 text-center">
+                      جلسه‌ای ثبت نشده است
+                    </p>
+                  )}
+                  {chapterLessons.map((lesson) => {
+                    const isSelected = lesson.id === selectedLessonId;
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => onSelectLesson(lesson.id, chapter.id)}
+                        className={`w-full px-4 py-2.5 flex items-center gap-2.5 text-right transition-colors border-r-2 ${
+                          isSelected
+                            ? "bg-blue-500/15 border-blue-500 text-white"
+                            : "border-transparent text-gray-300 hover:bg-gray-800/40"
+                        }`}
+                      >
+                        <div className="shrink-0">
+                          {isSelected ? (
+                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                              <svg
+                                className="w-3.5 h-3.5 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          ) : lesson.videoType ? (
+                            <svg
+                              className="w-6 h-6 text-gray-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-6 h-6 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium truncate">
+                            {lesson.order}. {lesson.title}
+                          </p>
+                        </div>
+                        {lesson.exercises.length > 0 && (
+                          <span className="shrink-0 text-xs text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded">
+                            {lesson.exercises.length}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ==================== COURSE PLAYER PAGE (STUDENT VIEW) ====================
+
+function CoursePlayerPage({
+  onNavigate,
+  courseId,
+}: {
+  onNavigate: (page: Page) => void;
+  courseId: string;
+}) {
+  const course =
+    initialCourses.find((c) => c.id === courseId) || initialCourses[0];
+
+  const chapters = allChapters.filter((c) => c.courseId === courseId);
+  const lessons = allLessons.filter((l) =>
+    chapters.some((ch) => ch.id === l.chapterId),
+  );
+
+  // انتخاب اولین جلسه فعال به‌صورت پیش‌فرض
+  const firstActiveChapter = [...chapters]
+    .filter((c) => c.isActive)
+    .sort((a, b) => a.order - b.order)[0];
+  const firstLesson = firstActiveChapter
+    ? lessons
+        .filter((l) => l.chapterId === firstActiveChapter.id)
+        .sort((a, b) => a.order - b.order)[0]
+    : null;
+
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(
+    firstLesson?.id ?? null,
+  );
+  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
+    firstActiveChapter?.id ?? null,
+  );
+
+  const selectedLesson = lessons.find((l) => l.id === selectedLessonId) || null;
+  const selectedChapter =
+    chapters.find((c) => c.id === selectedChapterId) || null;
+
+  const handleSelectLesson = (lessonId: string, chapterId: string) => {
+    setSelectedLessonId(lessonId);
+    setSelectedChapterId(chapterId);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-950 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Breadcrumb & Back */}
+        <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-sm text-gray-400 flex-wrap">
+            <button
+              onClick={() => onNavigate("home")}
+              className="hover:text-white transition-colors"
+            >
+              خانه
+            </button>
+            <span>/</span>
+            <span className="text-white">{course.title}</span>
+          </div>
+          <button
+            onClick={() => onNavigate("home")}
+            className="px-3 py-1.5 text-xs text-gray-300 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            بازگشت
+          </button>
+        </div>
+
+        {/* Layout: Left = Video, Right = Playlist (RTL) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Video Player - سمت چپ در RTL (col-span-2) */}
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <VideoPlayer
+              lesson={selectedLesson}
+              courseTitle={course.title}
+              chapterTitle={selectedChapter?.title}
+            />
+          </div>
+
+          {/* Playlist - سمت راست در RTL */}
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <CoursePlaylist
+              chapters={chapters}
+              lessons={lessons}
+              selectedLessonId={selectedLessonId}
+              onSelectLesson={handleSelectLesson}
+              courseTitle={course.title}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -3473,22 +3893,25 @@ export default function App() {
     id: string;
     title: string;
   } | null>(null);
+  const [playerCourseId, setPlayerCourseId] = useState<string>("c1");
 
   const handleNavigate = (page: Page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
+  const handleLogin = () => setIsLoggedIn(true);
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentPage("home");
   };
 
-  // Render page based on current route
+  const openCoursePlayer = (courseId: string) => {
+    setPlayerCourseId(courseId);
+    handleNavigate("course-player");
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "signin":
@@ -3496,16 +3919,21 @@ export default function App() {
       case "signup":
         return <SignUpPage onNavigate={handleNavigate} onLogin={handleLogin} />;
       case "change-password":
-        if (!isLoggedIn) {
-          // Redirect to signin if not logged in
+        if (!isLoggedIn)
           return (
             <SignInPage onNavigate={handleNavigate} onLogin={handleLogin} />
           );
-        }
         return (
           <ChangePasswordPage
             onNavigate={handleNavigate}
             onLogout={handleLogout}
+          />
+        );
+      case "course-player":
+        return (
+          <CoursePlayerPage
+            onNavigate={handleNavigate}
+            courseId={playerCourseId}
           />
         );
       case "admin-users":
@@ -3542,7 +3970,7 @@ export default function App() {
         return (
           <>
             <Banner isLoggedIn={isLoggedIn} onNavigate={handleNavigate} />
-            <CoursesSection />
+            <CoursesSection onOpenCourse={openCoursePlayer} />
           </>
         );
     }
