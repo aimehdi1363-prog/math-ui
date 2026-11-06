@@ -2,10 +2,21 @@ export interface Course {
   id: string;
   title: string;
   category: string;
+  image: string;
   description: string;
   instructor: string;
+  rating: number;
+  students: number;
   chapters: Chapter[];
+  isActive: boolean;
 }
+
+export type AdminCourse = Course & {
+  image: string;
+  rating: number;
+  students: number;
+  isActive: boolean;
+};
 
 export interface Chapter {
   id: string;

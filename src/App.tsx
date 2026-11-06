@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Chapter, Lesson } from "./types";
+import { AdminTab, Chapter, Course, Lesson } from "./types";
 
 // Types
 type Page =
@@ -13,15 +13,17 @@ type Page =
   | "admin-course-content";
 
 // Course data
-const courses = [
+const initialCourses: Course[] = [
   {
     id: "c1",
     title: "جبر پیشرفته",
+    category: "جبر",
     description:
       "یادگیری معادلات، نامعادلات، توابع و مفاهیم پیشرفته جبر با مثال‌های کاربردی و تمرین‌های متنوع",
+    instructor: "دکتر علی رضایی",
+    chapters: [],
     image:
       "https://image.qwenlm.ai/generated-images/e3a5eb95-89d2-46f5-ac48-a4d129483343/_result.png",
-    instructor: "دکتر علی رضایی",
     rating: 4.5,
     students: 1240,
     isActive: true,
@@ -29,11 +31,13 @@ const courses = [
   {
     id: "c2",
     title: "حسابان (کالکولوس)",
+    category: "حسابان",
     description:
       "مفاهیم حد، مشتق، انتگرال و کاربردهای آن‌ها در حل مسائل واقعی و مهندسی",
+    instructor: "دکتر مریم احمدی",
+    chapters: [],
     image:
       "https://image.qwenlm.ai/generated-images/1ed05e55-c1c9-401b-bbb8-1c5650ee7e9b/_result.png",
-    instructor: "دکتر مریم احمدی",
     rating: 4.8,
     students: 980,
     isActive: true,
@@ -41,11 +45,13 @@ const courses = [
   {
     id: "c3",
     title: "هندسه تحلیلی",
+    category: "هندسه",
     description:
       "بررسی اشکال هندسی، تبدیلات، مختصات و اثبات قضایا با رویکرد تحلیلی",
+    instructor: "مهندس سعید کریمی",
+    chapters: [],
     image:
       "https://image.qwenlm.ai/generated-images/4ccb9820-900d-4846-9075-374358a01da0/_result.png",
-    instructor: "مهندس سعید کریمی",
     rating: 4.2,
     students: 756,
     isActive: true,
@@ -53,11 +59,13 @@ const courses = [
   {
     id: "c4",
     title: "آمار و احتمال",
+    category: "آمار",
     description:
       "آموزش مفاهیم پایه و پیشرفته آمار، توزیع‌های احتمالی و تحلیل داده‌ها",
+    instructor: "دکتر زهرا موسوی",
+    chapters: [],
     image:
       "https://image.qwenlm.ai/generated-images/122aaf0c-5066-4559-a723-057a09d7bc0f/_result.png",
-    instructor: "دکتر زهرا موسوی",
     rating: 4.6,
     students: 1105,
     isActive: true,
@@ -1697,7 +1705,7 @@ function Banner({
 }
 
 // Course Card
-function CourseCard({ course }: { course: (typeof courses)[0] }) {
+function CourseCard({ course }: { course: Course }) {
   return (
     <div className="group bg-gray-800/50 border border-gray-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
       <div className="relative h-48 overflow-hidden">
@@ -1757,7 +1765,7 @@ function CoursesSection() {
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {courses.map((course) => (
+        {initialCourses.map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}
       </div>
@@ -1807,8 +1815,6 @@ function Footer() {
 
 // ==================== ADMIN COURSES PAGE ====================
 
-type Course = (typeof courses)[0];
-
 function AdminCoursesPage({
   onNavigate,
   onOpenContent,
@@ -1816,13 +1822,14 @@ function AdminCoursesPage({
   onNavigate: (page: Page) => void;
   onOpenContent?: (id: string, title: string) => void;
 }) {
-  const [courseList, setCourseList] = useState<Course[]>(courses);
+  const [courseList, setCourseList] = useState<Course[]>(initialCourses);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
+    category: "",
     description: "",
     instructor: "",
     image: "",
@@ -1834,6 +1841,7 @@ function AdminCoursesPage({
     setEditingCourse(null);
     setFormData({
       title: "",
+      category: "",
       description: "",
       instructor: "",
       image: "",
@@ -1847,6 +1855,7 @@ function AdminCoursesPage({
     setEditingCourse(course);
     setFormData({
       title: course.title,
+      category: course.category,
       description: course.description,
       instructor: course.instructor,
       image: course.image,
@@ -1860,6 +1869,7 @@ function AdminCoursesPage({
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = "عنوان دوره الزامی است";
+    if (!formData.category.trim()) newErrors.category = "دسته‌بندی الزامی است";
     if (!formData.description.trim())
       newErrors.description = "توضیحات الزامی است";
     if (!formData.instructor.trim())
@@ -1876,6 +1886,7 @@ function AdminCoursesPage({
             ? {
                 ...c,
                 title: formData.title,
+                category: formData.category,
                 description: formData.description,
                 instructor: formData.instructor,
                 image: formData.image,
@@ -1885,31 +1896,33 @@ function AdminCoursesPage({
         ),
       );
     } else {
-      const newId = Math.max(0, ...courseList.map((c) => c.id)) + 1;
+      const newId = `c-${Date.now()}`;
       setCourseList((prev) => [
         ...prev,
         {
           id: newId,
           title: formData.title,
+          category: formData.category,
           description: formData.description,
           instructor: formData.instructor,
+          chapters: [],
           image: formData.image,
           isActive: formData.isActive,
-          rating: 0, // مقدار اولیه محاسباتی
-          students: 0, // مقدار اولیه محاسباتی
+          rating: 0,
+          students: 0,
         },
       ]);
     }
     setIsModalOpen(false);
   };
 
-  const toggleActive = (id: number) => {
+  const toggleActive = (id: string) => {
     setCourseList((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)),
     );
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setCourseList((prev) => prev.filter((c) => c.id !== id));
     setDeleteConfirm(null);
   };
@@ -1986,9 +1999,14 @@ function AdminCoursesPage({
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-lg font-bold text-white truncate">
-                      {course.title}
-                    </h3>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-white truncate">
+                        {course.title}
+                      </h3>
+                      <span className="inline-block mt-1 text-xs text-purple-400 bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded-md">
+                        {course.category}
+                      </span>
+                    </div>
                     <span
                       className={`shrink-0 text-xs font-medium px-2 py-1 rounded-md ${
                         course.isActive
@@ -2189,134 +2207,6 @@ function AdminCoursesPage({
               </button>
             </div>
 
-            {/* <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  عنوان دوره
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className={`w-full bg-gray-800/50 border ${
-                    errors.title ? "border-red-500" : "border-gray-700"
-                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500`}
-                />
-                {errors.title && (
-                  <p className="text-red-400 text-xs mt-1">{errors.title}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  توضیحات
-                </label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className={`w-full bg-gray-800/50 border ${
-                    errors.description ? "border-red-500" : "border-gray-700"
-                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500 resize-none`}
-                />
-                {errors.description && (
-                  <p className="text-red-400 text-xs mt-1">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  لینک تصویر
-                </label>
-                <input
-                  type="url"
-                  dir="ltr"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
-                  }
-                  className={`w-full bg-gray-800/50 border ${
-                    errors.image ? "border-red-500" : "border-gray-700"
-                  } rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500`}
-                />
-                {errors.image && (
-                  <p className="text-red-400 text-xs mt-1">{errors.image}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    امتیاز (۰ تا ۵)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="5"
-                    value={formData.rating}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        rating: Number(e.target.value),
-                      })
-                    }
-                    className="w-full bg-gray-800/50 border border-gray-700 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    تعداد شرکت‌کننده
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.students}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        students: Number(e.target.value),
-                      })
-                    }
-                    className="w-full bg-gray-800/50 border border-gray-700 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isActive}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isActive: e.target.checked })
-                  }
-                  className="w-5 h-5 rounded accent-blue-500"
-                />
-                <span className="text-sm text-gray-300">دوره فعال باشد</span>
-              </label>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all"
-                >
-                  {editingCourse ? "ذخیره تغییرات" : "افزودن دوره"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-3 text-sm text-gray-300 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors"
-                >
-                  انصراف
-                </button>
-              </div>
-            </form> */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -2334,6 +2224,26 @@ function AdminCoursesPage({
                 />
                 {errors.title && (
                   <p className="text-red-400 text-xs mt-1">{errors.title}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  دسته‌بندی
+                </label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  placeholder="مثال: جبر، حسابان، هندسه"
+                  className={`w-full bg-gray-800/50 border ${
+                    errors.category ? "border-red-500" : "border-gray-700"
+                  } rounded-xl py-2.5 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500`}
+                />
+                {errors.category && (
+                  <p className="text-red-400 text-xs mt-1">{errors.category}</p>
                 )}
               </div>
 
