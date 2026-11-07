@@ -1,5 +1,6 @@
-import { Chapter, Course, Lesson } from "./types";
+import { Course, Chapter, Lesson } from "../types";
 
+// Course data
 export const initialCourses: Course[] = [
   {
     id: "c1",
@@ -121,7 +122,7 @@ export const initialLessonsWithVideo: Lesson[] = [
     description: "آشنایی با نمادهای ریاضی و مفهوم متغیر",
     order: 1,
     videoType: "aparat",
-    videoId: "aasr837",
+    videoId: "8j7y9b",
     exercises: [],
   },
   {
@@ -141,7 +142,7 @@ export const initialLessonsWithVideo: Lesson[] = [
     description: "روش‌های حل معادلات درجه اول و کاربردها",
     order: 1,
     videoType: "aparat",
-    videoId: "aasr837",
+    videoId: "5k3m2n",
     exercises: [],
   },
   {
@@ -158,9 +159,7 @@ export const initialLessonsWithVideo: Lesson[] = [
 
 // All chapters for viewing (multiple courses)
 export const allChapters: Chapter[] = [
-  // Course c1 - جبر پیشرفته
   ...initialChapters,
-  // Course c2 - حسابان
   {
     id: "ch4",
     courseId: "c2",
@@ -184,7 +183,6 @@ export const allChapters: Chapter[] = [
 // Lessons for all chapters
 export const allLessons: Lesson[] = [
   ...initialLessonsWithVideo,
-  // c2 lessons
   {
     id: "l5",
     chapterId: "ch4",

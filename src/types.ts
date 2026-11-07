@@ -68,4 +68,15 @@ export interface Category {
   name: string;
 }
 
+export type Page =
+  | "home"
+  | "signin"
+  | "signup"
+  | "change-password"
+  | "admin-courses"
+  | "admin-users"
+  | "admin-reports"
+  | "admin-course-content"
+  | "course-player";
+
 export type AdminTab = "courses" | "chapters" | "lessons" | "exercises";
